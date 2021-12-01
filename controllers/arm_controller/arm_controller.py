@@ -2,7 +2,7 @@
 
 # You may need to import some classes of the controller module. Ex:
 #  from controller import Robot, Motor, DistanceSensor
-from controller import Robot
+from controller import Robot, Motor, DistanceSensor, Keyboard, TouchSensor, PositionSensor
 
 # create the Robot instance.
 robot = Robot()
@@ -16,13 +16,35 @@ timestep = int(robot.getBasicTimeStep())
 #  ds = robot.getDevice('dsname')
 #  ds.enable(timestep)
 
+dsr = [0, 0, 0, 0]
+distance_sensors = [robot.getDevice('ts0'), robot.getDevice('ts1'), robot.getDevice('ts2'), robot.getDevice('ts3')]
+
+for ds in distance_sensors:
+    ds.enable(timestep)
+    
+psr = [0,0,0,0,0,0,0]
+psr_names = ["base_sensor", "upperarm_sensor", "forearm_sensor", "wrist_sensor", "rotational_wrist_sensor", 
+"left_gripper_sensor", "right_gripper_sensor"]
+position_sensors = [robot.getDevice(name) for name in psr_names]
+
+for ps in position_sensors:
+    ps.enable(timestep)
+
+# Allow sensors to properly initialize   
+for i in range(10): robot.step(timestep)  
+
 # Main loop:
 # - perform simulation steps until Webots is stopping the controller
 while robot.step(timestep) != -1:
     # Read the sensors:
     # Enter here functions to read sensor data, like:
     #  val = ds.getValue()
-
+    for i, ds in enumerate(distance_sensors):
+        dsr[i] = ds.getValue()
+        
+    for i, ps in enumerate(position_sensors):
+        psr[i] = ps.getValue()
+    print(psr)
     # Process sensor data here.
 
     # Enter here functions to send actuator commands, like:
@@ -30,4 +52,4 @@ while robot.step(timestep) != -1:
     pass
 
 # Enter here exit cleanup code.
-#Test for github
+#her
