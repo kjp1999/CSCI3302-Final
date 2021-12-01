@@ -43,6 +43,8 @@ part_names = ["base", "upperarm", "forearm", "wrist", "rotational_wrist", "left_
 target_pos = ('inf', 'inf', 'inf', 'inf', 'inf', 'inf', 'inf')
 robot_parts = []
 
+motor_ranges = [(0,6.03),(-2.44,0),(0,4.21),(-4.0491,0),(-5.79789,0),(-1.22,0),(0,1.22)]
+
 for i in range(len(part_names)):
     robot_parts.append(robot.getDevice(part_names[i]))
     
@@ -63,6 +65,11 @@ while robot.step(timestep) != -1:
     for i, ps in enumerate(position_sensors):
         psr[i] = ps.getValue()
     
+    for i in range(len(part_names)):
+        robot_parts[i].setPosition(motor_ranges[i][0])
+    
+    print(psr)
+
     # Process sensor data here.
 
     # Enter here functions to send actuator commands, like:
