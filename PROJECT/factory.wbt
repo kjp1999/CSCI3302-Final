@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.9071737830057269 -0.22527949081782128 -0.3553658374744838 5.063339417136077
-  position 1.9390285946102792 -7.562001719001193 2.327454212175349
+  orientation -0.7216684369543036 -0.3165874544958543 -0.6156029976858202 5.044899990009561
+  position 2.9434694555504954 -6.989968763601779 3.43273708584531
 }
 TexturedBackground {
   texture "empty_office"
@@ -27,6 +27,16 @@ Floor {
   tileSize 1 1
   appearance ThreadMetalPlate {
   }
+}
+Pedestrian {
+  translation -0.862445 -2.52618 1.25
+  rotation 0.9351132545462786 0.25056206820525934 0.25056306820553154 1.63784
+}
+Pedestrian {
+  translation -2.0431 -2.38802 1.35
+  rotation 0.8628559982596194 0.35740699927911007 0.35740699927911007 1.71778
+  name "pedestrian(1)"
+  shirtColor 1 0 0
 }
 Door {
   translation 10.04 -4 3.27
@@ -145,7 +155,7 @@ WoodenPalletStack {
 IprHd6m90 {
   translation 0.51 -4.61 0.74
   rotation -0.18615701608601462 0.6947450600336179 0.6947480600338772 -2.7734953071795863
-  controller "<extern>"
+  controller "arm_controller"
 }
 WoodenPalletStack {
   translation -5.2560137 -11.74814 0

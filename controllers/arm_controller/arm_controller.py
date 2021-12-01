@@ -68,13 +68,11 @@ while robot.step(timestep) != -1:
     for i in range(len(part_names)):
         robot_parts[i].setPosition(motor_ranges[i][0])
     
-    print(psr)
-
-    # Process sensor data here.
-
-    # Enter here functions to send actuator commands, like:
-    #  motor.setPosition(10.0)
-    pass
-
-# Enter here exit cleanup code.
-#her
+    
+    #COMPUTER VISION START
+    
+    #COMPUTER VISION END
+    
+    #IK START
+    
+    #IK END
