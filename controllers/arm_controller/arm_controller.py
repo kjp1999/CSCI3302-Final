@@ -19,6 +19,8 @@ timestep = int(robot.getBasicTimeStep())
 dsr = [0, 0, 0, 0]
 distance_sensors = [robot.getDevice('ts0'), robot.getDevice('ts1'), robot.getDevice('ts2'), robot.getDevice('ts3')]
 
+
+
 for ds in distance_sensors:
     ds.enable(timestep)
     
