@@ -113,7 +113,7 @@ def gripper_position(world=False):
         x*= -1
     return x,y 
  
-delta = .05 #the change in position for every timestep when a key is pressed
+delta = .5 #the change in position for every timestep when a key is pressed
 
 configmap = np.full((98, 80,3), (6.0, 6.0, 6.0)) #the map of configurations based on location in the matrix
 map = np.zeros((98,80)) #used to map which spaces the robot can reach
@@ -147,8 +147,19 @@ def getconfig():   #initializes the configmap
     np.save('configmap', configmap)
     print("x",minx,maxx,"y",miny,maxy)
 
+configmap = np.load('configmap.npy')
 
-def set_pos(x,y, world=False):   #pass in x,y in the arm's reference frame to set its position. cannot use world coordinates if base is rotated
+
+def get_object_pos(x,y,z): #x,y,z in world reference frame -> x,y,z in robots reference frame
+    rx, ry, rz = -.78, -5.21, .74
+    px = x - rx
+    py = y - ry
+    pz = z - rz
+    bearing = math.atan(-px/py)
+    x_distance = math.sqrt(px**2 + py**2)
+    return (-x_distance, pz, bearing) 
+    
+def set_pos(x,y, B=0, world=False):   #pass in x,y in the arm's reference frame to set its position. cannot use world coordinates if base is rotated
     if world:
         x+=5.21
         y-=.74
@@ -162,16 +173,17 @@ def set_pos(x,y, world=False):   #pass in x,y in the arm's reference frame to se
         joints[1].setPosition(a[0])
         joints[2].setPosition(a[1])
         joints[4].setPosition(a[2])
+        joints[0].setPosition(B)
         return configmap[xm][ym]
     else:
             print("cannot move robot to passed coordinates.")
             return [6,6,6]
+obj_conf = get_object_pos(-0.97,-4.87,0.76)
+print(obj_conf)
+set_pos(obj_conf[0], obj_conf[1], obj_conf[2])
 
 path = []
 current = 0
-if configmap[0][0][0] == 6:
-    configmap = np.load('configmap.npy')
-    print("config map loaded.")
 
 while robot.step(timestep) != -1:
     # Read the sensors:
