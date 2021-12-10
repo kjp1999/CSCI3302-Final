@@ -1,8 +1,5 @@
-"""This controller makes the robot following the red ball."""
-
-import cv2
 import numpy as np
-from controller import Robot, Camera, CameraRecognitionObject,Keyboard
+from controller import Robot, Camera, CameraRecognitionObject, Keyboard
 
 
 
@@ -18,6 +15,14 @@ camera.enable(timestep)
 camera.recognitionEnable(timestep)
 camera.hasRecognition()
 
+#Initialize gps
+gps = robot.getDevice('gps')
+gps.enable(timestep)
+
+#Initialize compass
+compass = robot.getDevice('compass')
+compass.enable(timestep)
+
 # Initialize motors
 motor_left = robot.getDevice('left wheel motor')
 motor_right = robot.getDevice('right wheel motor')
@@ -30,21 +35,6 @@ motor_right.setVelocity(0)
 keyboard = robot.getKeyboard()
 keyboard.enable(timestep)
 
-
-def get_image_from_camera():
-    """
-    Take an image from the camera device and prepare it for OpenCV processing:
-    - convert data type,
-    - convert to RGB format (from BGRA), and
-    - rotate & flip to match the actual image.
-    """
-    img = camera.getImageArray()
-    img = np.asarray(img, dtype=np.uint8)
-    img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
-    img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-    return cv2.flip(img, 1)
-
-
 vL = 0
 vR = 0
 
@@ -56,14 +46,33 @@ while robot.step(timestep) != -1:
             Object = i
             id = Object.get_id()
             position = Object.get_position()
+            orientation = Object.get_orientation()
             model = Object.get_model() 
-            print(val)
-            print(Object)
-            print(id)
-            print(position)
-            print(model)
             
-     
+            #construct our rotation matrix
+            alpha = orientation[2]
+            beta = orientation[1]
+            gamma = orientation[0]
+            
+            r = np.array([
+            [np.cos(alpha)*np.cos(gamma)*np.cos(beta) - np.sin(gamma)*np.sin(alpha), -np.cos(gamma)*np.cos(beta)*np.sin(alpha)-np.sin(gamma)*np.cos(alpha), np.cos(gamma)*np.sin(beta)],
+            [np.sin(gamma)*np.cos(beta)*np.cos(alpha), -np.cos(gamma)*np.cos(beta)*np.sin(alpha)+np.sin(gamma)*np.cos(alpha), np.sin(gamma)*np.sin(beta)],
+            [-np.sin(beta)*np.cos(alpha), np.sin(beta)*np.sin(alpha), np.cos(beta)]])
+            #print(r, '\n\n')
+            positions = compass.getValues()
+            print(positions)
+            print(np.matmul(r,positions[:3]))
+            #print(np.matmul(r,positions))
+      
+            # print(val)
+            # print(Object)
+            # print(id)
+            # print(position)
+            print(model)
+            # print(orientation)
+            
+    # print(gps.getValues())
+    # print(compass.getValues())
     key = keyboard.getKey()
     if key == keyboard.LEFT :
         vL = -MAX_SPEED
@@ -85,21 +94,4 @@ while robot.step(timestep) != -1:
             vR *= 0.75
     motor_left.setVelocity(vL)
     motor_right.setVelocity(vR)
-    # img = get_image_from_camera()
-
-    #Segment the image by color in HSV color space
-    # img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-    # mask = cv2.inRange(img, np.array([50, 150, 0]), np.array([200, 230, 255]))
-
-    #Find the largest segmented contour (red ball) and it's center
-    # contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    # largest_contour = max(contours, key=cv2.contourArea)
-    # largest_contour_center = cv2.moments(largest_contour)
-    # center_x = int(largest_contour_center['m10'] / largest_contour_center['m00'])
-
-    #Find error (ball distance from image center)
-    # error = camera.getWidth() / 2 - center_x
-
-    #Use simple proportional controller to follow the ball
-    # motor_left.setVelocity(- error * P_COEFFICIENT)
-    # motor_right.setVelocity(error * P_COEFFICIENT)
+    

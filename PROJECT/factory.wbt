@@ -1144,6 +1144,7 @@ Robot {
     }
   ]
   name "Ned"
+  model "Ned"
   boundingObject Group {
     children [
       Transform {
@@ -1294,7 +1295,7 @@ Robot {
   recognitionColors [
     0 0 0
   ]
-  controller "ned"
+  controller ""
 }
 Door {
   translation 10.04 -4 3.27

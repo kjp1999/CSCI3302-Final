@@ -10,5 +10,5 @@ textFiles: 0 "controllers/epuck_controller/epuck_controller.py"
 globalOptionalRendering: LidarPointClouds::CoordinateSystem
 consoles: Console:All:All
 renderingDevicePerspectives: e-puck:camera;0;6.5641;0;0
-renderingDevicePerspectives: e-puck:camera-1;1;0.243164;0;0
+renderingDevicePerspectives: e-puck:camera-1;1;0.268555;0;0
 renderingDevicePerspectives: e-puck:display;0;0.65;0;0.557223
