@@ -17,6 +17,10 @@ timestep = int(robot.getBasicTimeStep())
 keyboard = robot.getKeyboard()
 keyboard.enable(timestep)
 
+rx = 0
+ry = 0
+rz = .74
+
 #JOINT MOTORS
 joints = [robot.getDevice('joint_1'), robot.getDevice('joint_2'),
             robot.getDevice('joint_3'), robot.getDevice('joint_4'),
@@ -59,7 +63,6 @@ state = 'control'
 
 def erect(): #fully erect robot
     joints[2].setPosition(joint_ranges[2][0])
-   
 
 #part (int) 1 = joint2, 2=joint3, 3=joint5 
 #pass in the part number, optional position (grabs current if not passed in), returns the conventional angle 
@@ -100,26 +103,41 @@ def get_position(part, rad): #get joint position to be at angle. returns -999 if
 #returns the end effectors location. If base isn't rotated, pass in True to get world coordinates. 
 def gripper_position(world=False):
     if ps[0] != 0 and world == True:
-        print("Base is rotated, world coordinates will not be used")
-        world = False
+        if ps[0] < .001:
+            joints[0].setPosition(0)
+            ps[0] = 0
+        else:
+            print("Base is rotated, world coordinates will not be used")
+            world = False
     theta1 = get_angle(1)
     theta2 = get_angle(2)
     theta3 = get_angle(3)
     x = length1*math.cos(theta1) + length2*math.cos(theta1+theta2) + length3*math.cos(theta1+theta2+theta3)
     y = length1*math.sin(theta1) + length2*math.sin(theta1+theta2) + length3*math.sin(theta1+theta2+theta3) + .17
     if world:
-        x+=5.21
-        y+=.74
+        x+= -ry
+        y+= rz
         x*= -1
     return x,y 
  
-delta = .5 #the change in position for every timestep when a key is pressed
+def adjust_x(direction = False): #adjust x: False -> left, True -> right
+    goal_pos[0] += direction*.005 + (not direction)*-.005
+    set_pos(goal_pos)
+    
+def adjust_y(direction = False): #adjust y: False -> left, True -> right
+    goal_pos[1] += direction*.005 + (not direction)*-.005
+    set_pos(goal_pos)
+    
+delta = .05 #the change in position for every timestep when a key is pressed
 
 configmap = np.full((98, 80,3), (6.0, 6.0, 6.0)) #the map of configurations based on location in the matrix
 map = np.zeros((98,80)) #used to map which spaces the robot can reach
 
+def throwaway():
+    erect()
 
 def getconfig():   #initializes the configmap
+    configmap = np.full((98, 80,3), (6.0, 6.0, 6.0))
     maxx = -1
     maxy = -1
     minx = 1
@@ -136,7 +154,7 @@ def getconfig():   #initializes the configmap
                 y = round(y,2)
                 xm = int(x*100 + 52)
                 ym = int(y*100 + 4)
-                if configmap[xm][ym][0] == 6.0 and y>.01:
+                if configmap[xm][ym][0] == 6.0 and y>=0: #y>.01
                    maxx = x if x > maxx else maxx
                    maxy = y if y > maxy else maxy
                    minx = x if x < minx else minx
@@ -151,7 +169,6 @@ configmap = np.load('configmap.npy')
 
 
 def get_object_pos(x,y,z): #x,y,z in world reference frame -> x,y,z in robots reference frame
-    rx, ry, rz = -.78, -5.21, .74
     px = x - rx
     py = y - ry
     pz = z - rz
@@ -159,10 +176,12 @@ def get_object_pos(x,y,z): #x,y,z in world reference frame -> x,y,z in robots re
     x_distance = math.sqrt(px**2 + py**2)
     return (-x_distance, pz, bearing) 
     
-def set_pos(x,y, B=0, world=False):   #pass in x,y in the arm's reference frame to set its position. cannot use world coordinates if base is rotated
+def set_pos(p, B=0, world=False):   #pass in x,y in the arm's reference frame to set its position. cannot use world coordinates if base is rotated
+    x = p[0]
+    y = p[1]
     if world:
-        x+=5.21
-        y-=.74
+        x+=-ry
+        y-=rz
         x*=-1
         x=round(x,2)
         y=round(y,2)
@@ -178,12 +197,14 @@ def set_pos(x,y, B=0, world=False):   #pass in x,y in the arm's reference frame 
     else:
             print("cannot move robot to passed coordinates.")
             return [6,6,6]
-obj_conf = get_object_pos(-0.97,-4.87,0.76)
-print(obj_conf)
-set_pos(obj_conf[0], obj_conf[1], obj_conf[2])
 
 path = []
 current = 0
+goal_pos = [-.31, .02]  #pingpong -.31, .02, can -0.42, .03
+throw_state = 0
+prev_t = 0
+joints[6].setPosition(.01)
+joints[7].setPosition(.01)
 
 while robot.step(timestep) != -1:
     # Read the sensors:
@@ -206,6 +227,12 @@ while robot.step(timestep) != -1:
         key = keyboard.getKey()
         if key == ord("S"):
             joints[2].setPosition(ps[2]+delta)
+        elif key == ord("O"):
+            joints[6].setPosition(ps[6]+.005)
+            joints[7].setPosition(ps[7]+.005)
+        elif key == ord("C"):
+            joints[6].setPosition(ps[6]-.0005)
+            joints[7].setPosition(ps[7]-.0005)
         elif key == ord("W"):
             joints[2].setPosition(ps[2]-delta)
         elif key == keyboard.DOWN:
@@ -219,25 +246,62 @@ while robot.step(timestep) != -1:
         elif key == ord("N"):
             configmap = np.load('configmap.npy')
             print("config map loaded.")
+        elif key == ord("Y"):
+             state = 'throwaway'
+             print("throwing away!")
         elif key == ord("T"):
-            state = 'path'
-            for i in np.linspace(-.52,.45,30):
-                path.append([i, .6])
+            set_pos(goal_pos)
+        elif key == ord("1"):
+            adjust_x(False)
+        elif key == ord("2"):
+            adjust_x(True)
+        elif key == ord("3"):
+            adjust_y(False)
+        elif key == ord("4"):
+            adjust_y(True)
         elif key == ord("M"):
             getconfig()
-            joint_positions = [(-5.21,.74), (-5.21, .9115), (-5.198,1.1325), (-4.9681,1.1643),(-4.8463,1.1824)]
-            for x,y in joint_positions:
-                x+=5.21
-                y-=.74
-                x*=-1
-                x=round(x,2)
-                y=round(y,2)
-                xm = int(x*100 + 52)
-                ym = int(y*100 + 4)
-                map[xm][ym] = .5
+            #joint_positions = [(-5.21,.74), (-5.21, .9115), (-5.198,1.1325), (-4.9681,1.1643),(-4.8463,1.1824)]
+            #for x,y in joint_positions:
+            #    x+=5.21
+            #    y-=.74
+            #    x*=-1
+            #    x=round(x,2)
+            #    y=round(y,2)
+            #    xm = int(x*100 + 52)
+            #    ym = int(y*100 + 4)
+            #    map[xm][ym] = .5
             plt.imshow(np.flip(map.T, axis=0))
             plt.show()
         elif key == ord("P"):
             #print("ps:",ps)
-            print("gripper y,z in world:", gripper_position(), "theta1:",get_angle(1), "theta2:",get_angle(2), "theta3",get_angle(3))
+            print("joint positions:", ps[1], ps[2], ps[4])
+            #print("gripper y,z:", gripper_position(), "theta1:",get_angle(1), "theta2:",get_angle(2), "theta3",get_angle(3))
         
+    elif state == 'throwaway':
+        if throw_state == 0:
+            for i in range(6):
+                joints[i].setPosition(0)
+            prev_t = robot.getTime()
+            throw_state = 1
+        elif throw_state == 1:
+            if robot.getTime() > prev_t + 1:
+                throw_state = 2
+        elif throw_state == 2:
+            joints[1].setPosition(ps[1]-.5)
+            joints[2].setPosition(ps[2]-.5)
+            if ps[1] < -0.4728319402921535 and ps[2] < -0.47306292600702626:
+                joints[6].setPosition(.01)
+                joints[7].setPosition(.01)
+                throw_state = 3
+            
+        elif throw_state == 3:
+            prev_t = robot.getTime()
+            throw_state = 4
+        elif throw_state == 4:
+            if robot.getTime() > prev_t + 1:
+                for i in range(6):
+                    joints[i].setPosition(0)
+                print("done!")
+                throw_state = 0
+                state = 'control'
