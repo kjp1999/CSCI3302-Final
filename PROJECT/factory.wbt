@@ -1,10 +1,9 @@
 #VRML_SIM R2021b utf8
 WorldInfo {
-  gpsReference 2 10 0
 }
 Viewpoint {
-  orientation 0.021254171886150867 0.568630678306046 0.8223183154148034 3.0801499728533672
-  position 1.3736249646509378 3.7158289813913568 2.8007337837405517
+  orientation 0.0696653714028722 -0.42038459196728084 -0.9046676355788367 2.8439532489843513
+  position -0.4144605346866666 2.0269375685364466 2.4870478684085953
 }
 TexturedBackground {
   texture "empty_office"
@@ -28,6 +27,9 @@ Floor {
   tileSize 1 1
   appearance ThreadMetalPlate {
   }
+}
+FifaSoccerBall {
+  translation 0.49 -0.57 0.05
 }
 Robot {
   translation 0 -5.01 0.02
@@ -1448,8 +1450,7 @@ StraightStairs {
   ]
 }
 DEF EPUCK E-puck {
-  translation 0.0934237 -3.99304 0.169702
-  rotation 0.05554298956619485 -0.7009768683208066 -0.7110178664345954 2.88227
+  rotation 0.18615605074009625 -0.694748189365803 -0.6947451893649851 2.7734953071795863
   controller "epuck_controller"
   turretSlot [
     Camera {
@@ -1479,7 +1480,7 @@ DEF EPUCK E-puck {
   ]
 }
 Solid {
-  translation 0.28 -5.22 0
+  translation 0.14 -0.77 0
   rotation 0 0 1 0
   children [
     Shape {
@@ -1516,85 +1517,4 @@ Solid {
   recognitionColors [
     0 0 0
   ]
-}
-Solid {
-  translation 0.48 -5.22 0
-  rotation 0 0 1 0
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColorMap ImageTexture {
-          url [
-            "https://raw.githubusercontent.com/cyberbotics/webots/R2021b/projects/objects/balls/protos/textures/pingpong_logo.jpg"
-          ]
-        }
-        roughness 1
-        metalness 0
-        textureTransform TextureTransform {
-          scale 1 0.6
-          translation 0 0.3
-        }
-      }
-      geometry DEF SPHERE Sphere {
-        radius 0.02
-        subdivision 3
-      }
-    }
-  ]
-  name "ping pong ball(1)"
-  model "ping pong ball"
-  contactMaterial "ping pong ball material"
-  boundingObject USE SPHERE
-  physics Physics {
-    density 84
-    damping Damping {
-      linear 0.05
-      angular 0.1
-    }
-  }
-  recognitionColors [
-    0 0 0
-  ]
-}
-Solid {
-  translation 0.48 -4.88 0
-  rotation 0 0 1 0
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColorMap ImageTexture {
-          url [
-            "https://raw.githubusercontent.com/cyberbotics/webots/R2021b/projects/objects/balls/protos/textures/pingpong_logo.jpg"
-          ]
-        }
-        roughness 1
-        metalness 0
-        textureTransform TextureTransform {
-          scale 1 0.6
-          translation 0 0.3
-        }
-      }
-      geometry DEF SPHERE Sphere {
-        radius 0.02
-        subdivision 3
-      }
-    }
-  ]
-  name "ping pong ball(2)"
-  model "ping pong ball"
-  contactMaterial "ping pong ball material"
-  boundingObject USE SPHERE
-  physics Physics {
-    density 84
-    damping Damping {
-      linear 0.05
-      angular 0.1
-    }
-  }
-  recognitionColors [
-    0 0 0
-  ]
-}
-FifaSoccerBall {
-  translation 0.31 -5.37 0.2
 }
