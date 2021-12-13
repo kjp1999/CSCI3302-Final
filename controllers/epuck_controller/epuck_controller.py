@@ -49,8 +49,8 @@ while robot.step(timestep) != -1:
             id = Object.get_id()
             position = Object.get_position()
             orientation = Object.get_orientation()
-            model = Object.get_model() 
-            
+            model = Object.get_model()
+           
             #construct our rotation matrix
             # positions = compass.getValues()
             # alpha = positions[2]
@@ -97,12 +97,13 @@ while robot.step(timestep) != -1:
             pos = gps.getValues()
         
             #print(compass.getValues())
-            Y_world = (position[0] * np.cos(theta) + position[2] * np.sin(theta) + pos[1]) + (-.04)
-            X_world = (position[2] * np.cos(theta) - position[0] * np.sin(theta) + pos[0]) + (.01)
+            Y_world = (position[0] * np.cos(theta) + position[2] * np.sin(theta) + pos[1]) + (-.041)
+            X_world = (position[2] * np.cos(theta) - position[0] * np.sin(theta) + pos[0])
             #print(X_world, Y_world)
-            objects.append([model, X_world,Y_world])
-    print(objects)
-          
+            
+            if(model != b'Ned'):
+                objects.append([model, X_world,Y_world])
+            #print(objects)
     key = keyboard.getKey()
     if key == keyboard.LEFT :
         vL = -MAX_SPEED

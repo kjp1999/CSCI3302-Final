@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.0696653714028722 -0.42038459196728084 -0.9046676355788367 2.8439532489843513
-  position -0.4144605346866666 2.0269375685364466 2.4870478684085953
+  orientation 0.1647027047040338 -0.32893179475412243 -0.9298800425124778 2.2700545711774436
+  position -0.8214328962706057 1.2311453005152106 1.3020097379370874
 }
 TexturedBackground {
   texture "empty_office"
@@ -28,12 +28,85 @@ Floor {
   appearance ThreadMetalPlate {
   }
 }
-FifaSoccerBall {
-  translation 0.49 -0.57 0.05
+Solid {
+  translation -0.06 0.22 0.01
+  rotation 0 0 1 0
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "https://raw.githubusercontent.com/cyberbotics/webots/R2021b/projects/objects/balls/protos/textures/pingpong_logo.jpg"
+          ]
+        }
+        roughness 1
+        metalness 0
+        textureTransform TextureTransform {
+          scale 1 0.6
+          translation 0 0.3
+        }
+      }
+      geometry DEF SPHERE Sphere {
+        radius 0.02
+        subdivision 3
+      }
+    }
+  ]
+  name "ping pong ball(2)"
+  model "ping pong ball"
+  contactMaterial "ping pong ball material"
+  boundingObject USE SPHERE
+  physics Physics {
+    density 84
+    damping Damping {
+      linear 0.05
+      angular 0.1
+    }
+  }
+  recognitionColors [
+    0 0 0
+  ]
+}
+Solid {
+  translation 0.08 0.24 0.01
+  rotation 0 0 1 0
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "https://raw.githubusercontent.com/cyberbotics/webots/R2021b/projects/objects/balls/protos/textures/pingpong_logo.jpg"
+          ]
+        }
+        roughness 1
+        metalness 0
+        textureTransform TextureTransform {
+          scale 1 0.6
+          translation 0 0.3
+        }
+      }
+      geometry DEF SPHERE Sphere {
+        radius 0.02
+        subdivision 3
+      }
+    }
+  ]
+  name "ping pong ball(4)"
+  model "ping pong ball"
+  contactMaterial "ping pong ball material"
+  boundingObject USE SPHERE
+  physics Physics {
+    density 84
+    damping Damping {
+      linear 0.05
+      angular 0.1
+    }
+  }
+  recognitionColors [
+    0 0 0
+  ]
 }
 Robot {
-  translation 0 -5.01 0.02
-  rotation 0 0 1 -1.8325953071795862
   children [
     Transform {
       rotation 0 0 1 3.14
@@ -378,7 +451,7 @@ Robot {
             ]
             endPoint Solid {
               translation 0 0 0.065
-              rotation 0 -1 0 1.57
+              rotation -5.7521410604846045e-18 -1 7.85358992791498e-17 1.5699999999999996
               children [
                 Transform {
                   rotation 0 0 -1 1.57
@@ -513,7 +586,7 @@ Robot {
                         ]
                         endPoint Solid {
                           translation 0.032 0.042 0
-                          rotation -0.5775032287046065 -0.5775032287046065 -0.5770442285228318 2.093475
+                          rotation -0.5775032287046064 -0.5775032287046064 -0.5770442285228317 2.0934750000000006
                           children [
                             Transform {
                               translation 0 0 0.02
@@ -590,7 +663,7 @@ Robot {
                               ]
                               endPoint Solid {
                                 translation 0 0 0.188
-                                rotation -0.000397999936955223 -0.9999998415960377 0.000397999936955223 1.570796
+                                rotation -0.000397999936955228 -0.9999998415960377 0.00039799993695522246 1.570796
                                 children [
                                   Shape {
                                     appearance PBRAppearance {
@@ -655,7 +728,7 @@ Robot {
                                     ]
                                     endPoint Solid {
                                       translation 0.0197 0.00925 0
-                                      rotation 0 1 0 1.57
+                                      rotation -2.1771249612615845e-25 1 -2.9256902366559874e-25 1.57
                                       children [
                                         Shape {
                                           appearance USE GRAY_APPEARANCE
@@ -735,7 +808,7 @@ Robot {
                                                 }
                                               ]
                                               endPoint Solid {
-                                                translation 0.01455 -0.0796 0.009614
+                                                translation 0.01455 -0.0796 0.009613999999999998
                                                 rotation 1 0 0 1.5708
                                                 children [
                                                   Shape {
@@ -792,7 +865,7 @@ Robot {
                                                 }
                                               ]
                                               endPoint Solid {
-                                                translation 0.01455 -0.0796 -0.011066
+                                                translation 0.01455 -0.0796 -0.011066000000000001
                                                 rotation 1 0 0 1.5708
                                                 children [
                                                   Shape {
@@ -1297,7 +1370,7 @@ Robot {
   recognitionColors [
     0 0 0
   ]
-  controller ""
+  controller "ned_controller"
 }
 Door {
   translation 10.04 -4 3.27
@@ -1450,7 +1523,8 @@ StraightStairs {
   ]
 }
 DEF EPUCK E-puck {
-  rotation 0.18615605074009625 -0.694748189365803 -0.6947451893649851 2.7734953071795863
+  translation 0.00378 0.61431 -3.14354e-06
+  rotation 5.085742022373689e-09 0.707108281185553 0.70710528118436 3.14159
   controller "epuck_controller"
   turretSlot [
     Camera {
@@ -1480,7 +1554,7 @@ DEF EPUCK E-puck {
   ]
 }
 Solid {
-  translation 0.14 -0.77 0
+  translation 0.01 0.19 0.02
   rotation 0 0 1 0
   children [
     Shape {
@@ -1504,6 +1578,84 @@ Solid {
     }
   ]
   name "ping pong ball(3)"
+  model "ping pong ball"
+  contactMaterial "ping pong ball material"
+  boundingObject USE SPHERE
+  physics Physics {
+    density 84
+    damping Damping {
+      linear 0.05
+      angular 0.1
+    }
+  }
+  recognitionColors [
+    0 0 0
+  ]
+}
+Solid {
+  translation -0.1 0.15 0.01
+  rotation 0 0 1 0
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "https://raw.githubusercontent.com/cyberbotics/webots/R2021b/projects/objects/balls/protos/textures/pingpong_logo.jpg"
+          ]
+        }
+        roughness 1
+        metalness 0
+        textureTransform TextureTransform {
+          scale 1 0.6
+          translation 0 0.3
+        }
+      }
+      geometry DEF SPHERE Sphere {
+        radius 0.02
+        subdivision 3
+      }
+    }
+  ]
+  name "ping pong ball"
+  model "ping pong ball"
+  contactMaterial "ping pong ball material"
+  boundingObject USE SPHERE
+  physics Physics {
+    density 84
+    damping Damping {
+      linear 0.05
+      angular 0.1
+    }
+  }
+  recognitionColors [
+    0 0 0
+  ]
+}
+Solid {
+  translation 0.13 0.15 0.01
+  rotation 0 0 1 0
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColorMap ImageTexture {
+          url [
+            "https://raw.githubusercontent.com/cyberbotics/webots/R2021b/projects/objects/balls/protos/textures/pingpong_logo.jpg"
+          ]
+        }
+        roughness 1
+        metalness 0
+        textureTransform TextureTransform {
+          scale 1 0.6
+          translation 0 0.3
+        }
+      }
+      geometry DEF SPHERE Sphere {
+        radius 0.02
+        subdivision 3
+      }
+    }
+  ]
+  name "ping pong ball(1)"
   model "ping pong ball"
   contactMaterial "ping pong ball material"
   boundingObject USE SPHERE
