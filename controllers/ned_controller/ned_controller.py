@@ -19,7 +19,7 @@ keyboard.enable(timestep)
 
 rx = 0
 ry = 0
-rz = .74
+rz = 0
 
 #JOINT MOTORS
 joints = [robot.getDevice('joint_1'), robot.getDevice('joint_2'),
@@ -121,7 +121,7 @@ def gripper_position(world=False):
     return x,y 
  
 def adjust_x(direction = False): #adjust x: False -> left, True -> right
-    goal_pos[0] += direction*.005 + (not direction)*-.005
+    goal_pos[0] += direction*.0005 + (not direction)*-.0005
     set_pos(goal_pos)
     
 def adjust_y(direction = False): #adjust y: False -> left, True -> right
@@ -133,16 +133,13 @@ delta = .05 #the change in position for every timestep when a key is pressed
 configmap = np.full((98, 80,3), (6.0, 6.0, 6.0)) #the map of configurations based on location in the matrix
 map = np.zeros((98,80)) #used to map which spaces the robot can reach
 
-def throwaway():
-    erect()
-
 def getconfig():   #initializes the configmap
     configmap = np.full((98, 80,3), (6.0, 6.0, 6.0))
     maxx = -1
     maxy = -1
     minx = 1
     miny = 1
-    for t1 in np.linspace(-.8,.8,50):
+    for t1 in np.linspace(-.8,.8,100):
         for t2 in np.linspace(-1.5,1.3,100):
             for t3 in np.linspace(-1.5,1.5,100):
                 theta1 = offset1 + t1
@@ -164,7 +161,7 @@ def getconfig():   #initializes the configmap
                    map[xm][ym] = 1 
     np.save('configmap', configmap)
     print("x",minx,maxx,"y",miny,maxy)
-
+#getconfig()
 configmap = np.load('configmap.npy')
 
 
@@ -174,9 +171,20 @@ def get_object_pos(x,y,z): #x,y,z in world reference frame -> x,y,z in robots re
     pz = z - rz
     bearing = math.atan(-px/py)
     x_distance = math.sqrt(px**2 + py**2)
-    return (-x_distance, pz, bearing) 
+    if y < 0 and x > 0: 
+        bearing = bearing - math.pi
+    elif y < 0 and x < 0:
+        bearing = bearing + math.pi
+    elif x == 0 and y < 0:
+        bearing = bearing - math.pi
+    return [-x_distance, pz, bearing]
     
 def set_pos(p, B=0, world=False):   #pass in x,y in the arm's reference frame to set its position. cannot use world coordinates if base is rotated
+    if p is None:
+        joints[0].setPosition(B)
+        return
+    if len(goal_pos) == 3:
+        B = goal_pos[2]
     x = p[0]
     y = p[1]
     if world:
@@ -198,10 +206,13 @@ def set_pos(p, B=0, world=False):   #pass in x,y in the arm's reference frame to
             print("cannot move robot to passed coordinates.")
             return [6,6,6]
 
+objects = None
+oi = 0
 path = []
 current = 0
-goal_pos = [-.31, .02]  #pingpong -.31, .02, can -0.42, .03
-throw_state = 0
+goal_pos = []  #pingpong -.31, .02, can -0.42, .03
+throw_state = -2
+pickup_state = 0
 prev_t = 0
 joints[6].setPosition(.01)
 joints[7].setPosition(.01)
@@ -239,6 +250,10 @@ while robot.step(timestep) != -1:
             joints[1].setPosition(ps[1]+delta)
         elif key == keyboard.UP:
             joints[1].setPosition(ps[1]-delta)
+        elif key == ord("A"):
+            joints[0].setPosition(ps[0]+delta/4)
+        elif key == ord("D"):
+            joints[0].setPosition(ps[0]-delta/4)
         elif key == ord("Q"):
             joints[4].setPosition(ps[4]+delta)
         elif key == ord("Z"):
@@ -246,11 +261,26 @@ while robot.step(timestep) != -1:
         elif key == ord("N"):
             configmap = np.load('configmap.npy')
             print("config map loaded.")
+        elif key == ord("H"):
+             objects = np.load('../epuck_controller/positions.npy')
+             print("object positions loaded")
         elif key == ord("Y"):
              state = 'throwaway'
              print("throwing away!")
         elif key == ord("T"):
-            set_pos(goal_pos)
+            if objects is None:
+                print("No object coordinates loaded")
+            elif oi >= len(objects):
+                print('finish list')
+                oi = 0
+                objects = None
+               
+            else:
+                c = objects[oi]
+                print("Current object:",c[0])
+                
+                goal_pos = get_object_pos(float(c[1]),float(c[2]),.02+rz)
+                state = 'pickup'
         elif key == ord("1"):
             adjust_x(False)
         elif key == ord("2"):
@@ -261,29 +291,60 @@ while robot.step(timestep) != -1:
             adjust_y(True)
         elif key == ord("M"):
             getconfig()
-            #joint_positions = [(-5.21,.74), (-5.21, .9115), (-5.198,1.1325), (-4.9681,1.1643),(-4.8463,1.1824)]
-            #for x,y in joint_positions:
-            #    x+=5.21
-            #    y-=.74
-            #    x*=-1
-            #    x=round(x,2)
-            #    y=round(y,2)
-            #    xm = int(x*100 + 52)
-            #    ym = int(y*100 + 4)
-            #    map[xm][ym] = .5
             plt.imshow(np.flip(map.T, axis=0))
             plt.show()
         elif key == ord("P"):
             #print("ps:",ps)
-            print("joint positions:", ps[1], ps[2], ps[4])
-            #print("gripper y,z:", gripper_position(), "theta1:",get_angle(1), "theta2:",get_angle(2), "theta3",get_angle(3))
+            #print("joint positions:", ps[1], ps[2], ps[4])
+            print("gripper y,z:", gripper_position())
         
-    elif state == 'throwaway':
-        if throw_state == 0:
-            for i in range(6):
-                joints[i].setPosition(0)
+    elif state == 'pickup':
+        if pickup_state == 0:
+            print("picking up")
+            #open gripper
+            joints[6].setPosition(.01)
+            joints[7].setPosition(.01)
+            set_pos(None, goal_pos[2])
             prev_t = robot.getTime()
-            throw_state = 1
+            pickup_state = 1
+        elif pickup_state == 1:
+            if robot.getTime() > prev_t + 1:
+                pickup_state = 2
+        elif pickup_state == 2:
+            set_pos(goal_pos[0:2])
+            prev_t = robot.getTime()
+            pickup_state = 3
+        elif pickup_state == 3:
+            if robot.getTime() > prev_t + 1:
+                adjust_y(False)
+                #close gripper
+                joints[6].setPosition(0)
+                joints[7].setPosition(0)
+                print("done.")
+                state = 'control'
+                pickup_state = 0
+                oi += 1
+    elif state == 'throwaway':
+        if throw_state == -2:
+            #print("-2")
+            joints[1].setPosition(0)
+            joints[2].setPosition(0)
+            joints[4].setPosition(0)
+            prev_t = robot.getTime()
+            throw_state = -1
+        elif throw_state == -1:
+            #print("-1")
+            if robot.getTime() > prev_t + 1:
+                throw_state = 0
+        if throw_state == 0:
+            sign = -1 if ps[0] > 0 else 1 
+            joints[0].setPosition(ps[0]+sign*.05)
+            if abs(ps[0]) < .1:
+                prev_t = robot.getTime()
+                throw_state = .5
+        elif throw_state == .5:
+            if robot.getTime() > prev_t + 1:
+                throw_state = 1
         elif throw_state == 1:
             if robot.getTime() > prev_t + 1:
                 throw_state = 2
@@ -294,7 +355,6 @@ while robot.step(timestep) != -1:
                 joints[6].setPosition(.01)
                 joints[7].setPosition(.01)
                 throw_state = 3
-            
         elif throw_state == 3:
             prev_t = robot.getTime()
             throw_state = 4
@@ -303,5 +363,5 @@ while robot.step(timestep) != -1:
                 for i in range(6):
                     joints[i].setPosition(0)
                 print("done!")
-                throw_state = 0
+                throw_state = -2
                 state = 'control'
