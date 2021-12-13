@@ -241,14 +241,14 @@ while robot.step(timestep) != -1:
         elif key == ord("O"):
             joints[6].setPosition(ps[6]+.005)
             joints[7].setPosition(ps[7]+.005)
-        elif key == ord("C"):
+        elif key == ord("V"):
             joints[6].setPosition(ps[6]-.0005)
             joints[7].setPosition(ps[7]-.0005)
         elif key == ord("W"):
             joints[2].setPosition(ps[2]-delta)
-        elif key == keyboard.DOWN:
+        elif key == ord("C"):
             joints[1].setPosition(ps[1]+delta)
-        elif key == keyboard.UP:
+        elif key == ord("E"):
             joints[1].setPosition(ps[1]-delta)
         elif key == ord("A"):
             joints[0].setPosition(ps[0]+delta/4)
@@ -268,6 +268,8 @@ while robot.step(timestep) != -1:
              state = 'throwaway'
              print("throwing away!")
         elif key == ord("T"):
+            for i in joints:
+                i.setPosition(0)
             if objects is None:
                 print("No object coordinates loaded")
             elif oi >= len(objects):
